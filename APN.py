@@ -87,11 +87,17 @@ if __name__ == '__main__':
                             [torch.randint(embed_size, (batch_size, a_len), dtype=torch.long)] * neg_sample_rate
                             )
     pos_score, neg_score = m(q, a_pos, *a_neg_list)
+    g_pos_score = torch.randn(*pos_score.size())
+    g_neg_score = torch.randn(*neg_score.size())
+    pos_score.backward(g_pos_score, retain_graph=True)
+    neg_score.backward(g_neg_score, retain_graph=True)
+    # print(pos_score.size())
     assert pos_score.size() == (batch_size,) == neg_score.size()
     # test
     q, q_test = (torch.randint(embed_size, (batch_size, q_len), dtype=torch.long),
                  torch.randint(embed_size, (batch_size, a_len), dtype=torch.long)
                  )
     simi_score = m(q, q_test)
+    # print(simi_score.size())
     assert simi_score.size() == (batch_size,)
     # need a threshold
